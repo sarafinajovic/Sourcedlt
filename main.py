@@ -1,3 +1,4 @@
+import re
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -15,10 +16,14 @@ def read_root():
 
 @app.post("/verify")
 def verify_urls(payload: URLRequest):
-  # Put your URL extraction and domain verification logic here
-  # For example, returning the received text or verification results:
+  # Regular expression to find http/https URLs in the text
+  url_pattern = r"https?://[^\s]+"
+  found_urls = re.findall(url_pattern, payload.text)
+
   return {
       "status": "success",
       "received_text": payload.text,
-      "message": "Verification logic ready to execute!",
+      "extracted_urls": found_urls,
+      "url_count": len(found_urls),
+      "message": f"Successfully scanned text and found {len(found_urls)} URL(s).",
   }
