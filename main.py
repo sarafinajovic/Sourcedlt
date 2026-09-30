@@ -1,26 +1,11 @@
 import re
-from fastapi import FastAPI, HTTPException, Security, status
-from fastapi.security import APIKeyHeader
+from fastapi import FastAPI, Header, HTTPException, status
 from pydantic import BaseModel
 
 app = FastAPI(title="SourcedIt API", version="1.0.0")
 
-# Define the header name clients must include
-API_KEY_NAME = "x-api-key"
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
-
-# Authorized keys dictionary (we can later connect this to a database)
-# For now, your personal admin key is included here:
+# Authorized keys dictionary
 VALID_API_KEYS = {"sarafina_secret_key_123"}
-
-
-def get_api_key(api_key: str = Security(api_key_header)):
-  if not api_key or api_key not in VALID_API_KEYS:
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or missing API Key. Please provide a valid x-api-key header.",
-    )
-  return api_key
 
 
 class URLRequest(BaseModel):
@@ -35,7 +20,19 @@ def read_root():
 
 
 @app.post("/verify")
-def verify_urls(payload: URLRequest, api_key: str = Security(get_api_key)):
+def verify_urls(
+    payload: URLRequest,
+    x_api_key: str = Header(
+        None, description="Enter your API key here (e.g., sarafina_secret_key_123)"
+    ),
+):
+  # Check if the provided key is valid
+  if not x_api_key or x_api_key not in VALID_API_KEYS:
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or missing API Key. Please provide a valid x-api-key.",
+    )
+
   # Standard regex to find http/https URLs
   url_pattern = r"https?://[^\s]+"
   raw_urls = re.findall(url_pattern, payload.text)
