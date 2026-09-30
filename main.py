@@ -9,7 +9,8 @@ app = FastAPI(title="SourcedIt API", version="1.0.0")
 API_KEY_NAME = "x-api-key"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
-# For now, we will use a test valid key (later you can store keys in a database)
+# Authorized keys dictionary (we can later connect this to a database)
+# For now, your personal admin key is included here:
 VALID_API_KEYS = {"sarafina_secret_key_123"}
 
 
@@ -29,7 +30,7 @@ class URLRequest(BaseModel):
 @app.get("/")
 def read_root():
   return {
-      "message": "Welcome to SourcedIt API! Endpoint /verify is protected by an API key."
+      "message": "Welcome to SourcedIt API! Endpoint /verify is protected."
   }
 
 
